@@ -1,0 +1,22 @@
+// Tailscale tailnet policy: tag-based zero-trust access for the Orders service. Validate-only sketch.
+{
+  "tagOwners": {
+    "tag:orders-api": ["group:platform"],
+    "tag:orders-db":  ["group:platform"],
+  },
+  "groups": {
+    "group:platform": ["admin@example.com"],
+    "group:dev":      ["dev@example.com"],
+  },
+  "acls": [
+    // developers reach only the API, only on 443
+    {"action": "accept", "src": ["group:dev"], "dst": ["tag:orders-api:443"]},
+    // the API reaches the database; nobody else does
+    {"action": "accept", "src": ["tag:orders-api"], "dst": ["tag:orders-db:5432"]},
+    // platform admins may SSH to tagged nodes
+    {"action": "accept", "src": ["group:platform"], "dst": ["tag:orders-api:22", "tag:orders-db:22"]},
+  ],
+  "tests": [
+    {"src": "dev@example.com", "accept": ["tag:orders-api:443"], "deny": ["tag:orders-db:5432"]},
+  ],
+}

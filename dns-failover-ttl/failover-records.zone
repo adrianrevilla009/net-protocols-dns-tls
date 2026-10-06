@@ -1,0 +1,8 @@
+; Example zone fragment for DNS failover. Documentation range IPs (RFC 5737).
+; Primary and secondary share one name; a health-checking DNS service (Route 53, etc.)
+; answers with the primary until its health check fails, then switches to the secondary.
+$ORIGIN example.com.
+$TTL 60
+orders  60  IN  A  192.0.2.10    ; PRIMARY   (health-checked)
+orders  60  IN  A  198.51.100.10 ; SECONDARY (served only when primary is unhealthy)
+; Low TTL = fast failover but more query load; 300s+ is typical for stable records.
